@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <title>JDX Salon POS</title>
+  <style>
+    :root{--bg:#f4efe6;--panel:#fffdf8;--ink:#1d1d1d;--muted:#6b6862;--line:#ded8ce;--gold:#d5ae4d;--green:#e4f3ed;--blue:#e8f1fb;--shadow:0 12px 30px rgba(40,33,22,.10)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+    button,input,select{font:inherit}.app{min-height:100vh;display:grid;grid-template-columns:230px 1fr}.side{background:#171717;color:#fff;padding:24px 18px;display:flex;flex-direction:column;gap:18px}.brand{font-size:24px;font-weight:800}.brand small{display:block;font-size:11px;letter-spacing:.15em;color:#bbb;margin-top:4px}.nav{display:grid;gap:10px}.nav button{border:0;border-radius:16px;padding:16px;text-align:left;background:#2a2a2a;color:#fff;font-weight:700;cursor:pointer}.nav button.active{background:var(--gold);color:#1d1d1d}.side .bottom{margin-top:auto;color:#bbb;font-size:12px;line-height:1.5}
+    main{padding:28px;min-width:0}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.top h1{margin:0;font-size:30px}.top p{margin:5px 0 0;color:var(--muted)}.clock{background:var(--panel);padding:14px 18px;border-radius:16px;box-shadow:var(--shadow);font-weight:700;white-space:nowrap}
+    .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.actions button{border:0;border-radius:20px;padding:20px 14px;font-weight:800;font-size:17px;cursor:pointer;box-shadow:var(--shadow)}.primary{background:var(--gold)}.dark{background:#202020;color:#fff}.softg{background:var(--green)}.softb{background:var(--blue)}
+    .panel{background:var(--panel);border:1px solid rgba(0,0,0,.04);border-radius:24px;padding:18px;box-shadow:var(--shadow);margin-bottom:18px}.panelHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.panelHead h2{margin:0;font-size:22px}.badge{background:#eee9df;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800}
+    .techs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.tech{border:1px solid var(--line);background:#fff;border-radius:20px;padding:16px;text-align:left;cursor:pointer;min-height:128px}.avatar{width:44px;height:44px;border-radius:50%;background:#202020;color:#fff;display:grid;place-items:center;font-weight:800}.tech h3{margin:10px 0 4px}.tech p{margin:0;color:var(--muted);font-size:13px}.tech .status{margin-top:10px;color:#16815c;font-weight:800;font-size:13px}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.filters button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-weight:700;cursor:pointer}.filters button.active{background:#1f1f1f;color:#fff}
+    .schedule{display:grid;gap:10px}.appt{display:grid;grid-template-columns:110px 1fr auto;gap:14px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}.time{font-weight:900}.appt h4{margin:0 0 4px}.appt p{margin:0;color:var(--muted);font-size:13px}.statusPill{border-radius:999px;background:var(--green);padding:7px 10px;font-size:12px;font-weight:800}.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}.error{background:#fff0ef;color:#9c2e25;padding:14px;border-radius:14px;margin-bottom:14px;display:none}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}.modalBox{width:min(1100px,100%);height:min(900px,94vh);background:#fff;border-radius:24px;overflow:hidden}.modalTop{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #ddd}.close{border:0;background:#eee;border-radius:12px;padding:10px 14px;cursor:pointer}
+    @media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}main{padding:16px}.actions{grid-template-columns:1fr 1fr}.top{align-items:flex-start}.clock{font-size:12px}.appt{grid-template-columns:90px 1fr}.statusPill{grid-column:2}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">JDX Salon POS<small>TOUCHSCREEN SCHEDULER</small></div>
+    <div class="nav"><button class="active">Today</button><button>Appointments</button><button>Walk-Ins</button><button>Checkout</button><button>Reports</button></div>
+    <div class="bottom">Live GoHighLevel calendars<br>Refreshes every 30 seconds</div>
+  </aside>
+  <main>
+    <div class="top"><div><h1>Salon Floor</h1><p>All technician calendars loaded from GoHighLevel.</p></div><div class="clock" id="clock"></div></div>
+    <div class="actions"><button class="primary" id="newAppt">+ New Appointment</button><button class="dark">+ Add Walk-In</button><button class="softg">Check In</button><button class="softb">$ Checkout</button></div>
+    <div class="error" id="error"></div>
+    <section class="panel"><div class="panelHead"><h2>Choose a Technician</h2><span class="badge" id="techCount">Loading…</span></div><div class="techs" id="techs"></div></section>
+    <section class="panel"><div class="panelHead"><h2 id="scheduleTitle">Today’s Schedule</h2><span class="badge" id="apptCount">0 appointments</span></div><div class="filters" id="filters"><button data-days="1" class="active">Today</button><button data-days="2">Tomorrow</button><button data-days="7">7 Days</button><button data-days="30">30 Days</button></div><div class="schedule" id="schedule"><div class="empty">Loading appointments…</div></div></section>
+  </main>
+</div>
+<div class="modal" id="calendarModal"><div class="modalBox"><div class="modalTop"><strong>Book with Ann</strong><button class="close" id="closeModal">Close</button></div><iframe title="Ann booking calendar" src="about:blank" id="calendarFrame" style="width:100%;height:calc(100% - 58px);border:0"></iframe></div></div>
+<script>
+const ANN_URL='https://api.leadconnectorhq.com/widget/bookings/ann-a-personal-calendar-zuc-a9ymt';
+const state={calendars:[],events:[],selectedCalendarId:'all',days:1};
+const $=(id)=>document.getElementById(id);
+function updateClock(){ $('clock').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date()); }
+updateClock(); setInterval(updateClock,60000);
+function initials(name='Tech'){return name.split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()}
+function showError(message){$('error').textContent=message;$('error').style.display='block'}
+function clearError(){$('error').style.display='none'}
+async function jsonFetch(url){const r=await fetch(url);const text=await r.text();let data;try{data=JSON.parse(text)}catch{throw new Error('API returned a webpage instead of JSON. Confirm the api folder is deployed correctly.')}if(!r.ok)throw new Error(data.error||`Request failed (${r.status})`);return data}
+async function loadCalendars(){clearError();const data=await jsonFetch('/api/calendars');state.calendars=data.calendars||data.data||[];renderTechs();await loadEvents()}
+function renderTechs(){const techs=$('techs');techs.innerHTML='';const all=document.createElement('button');all.className='tech';all.innerHTML='<div class="avatar">ALL</div><h3>All Technicians</h3><p>Combined schedule</p><div class="status">View all calendars</div>';all.addEventListener('click',()=>selectTech('all','All Technicians'));techs.appendChild(all);state.calendars.forEach(c=>{const name=c.name||c.title||'Technician';const b=document.createElement('button');b.className='tech';b.innerHTML=`<div class="avatar">${initials(name)}</div><h3>${escapeHtml(name)}</h3><p>GoHighLevel calendar</p><div class="status">Tap to view schedule</div>`;b.addEventListener('click',()=>selectTech(c.id,name));techs.appendChild(b)});$('techCount').textContent=`${state.calendars.length} calendars`}
+function selectTech(id,name){state.selectedCalendarId=id;$('scheduleTitle').textContent=name+' Schedule';renderEvents()}
+function range(){const start=new Date();start.setHours(0,0,0,0);if(state.days===2){start.setDate(start.getDate()+1)}const end=new Date(start);if(state.days===1||state.days===2){end.setHours(23,59,59,999)}else{end.setDate(end.getDate()+state.days-1);end.setHours(23,59,59,999)}return{start,end}}
+async function loadEvents(){const {start,end}=range();const jobs=state.calendars.map(async c=>{const data=await jsonFetch(`/api/appointments?calendarId=${encodeURIComponent(c.id)}&startTime=${start.getTime()}&endTime=${end.getTime()}`);const events=data.events||data.data||[];return events.map(e=>({...e,_calendarId:c.id,_calendarName:c.name||c.title||'Technician'}))});const results=await Promise.allSettled(jobs);state.events=results.filter(x=>x.status==='fulfilled').flatMap(x=>x.value);const failed=results.filter(x=>x.status==='rejected');if(failed.length)showError(`${failed.length} calendar(s) could not be loaded. Check scopes and calendar access.`);renderEvents()}
+function renderEvents(){let events=state.events;if(state.selectedCalendarId!=='all')events=events.filter(e=>e._calendarId===state.selectedCalendarId);events=[...events].sort((a,b)=>new Date(a.startTime||a.start).getTime()-new Date(b.startTime||b.start).getTime());$('apptCount').textContent=`${events.length} appointment${events.length===1?'':'s'}`;const box=$('schedule');if(!events.length){box.innerHTML='<div class="empty">No appointments found for this period.</div>';return}box.innerHTML=events.map(e=>{const start=new Date(e.startTime||e.start);const title=e.title||e.appointmentTitle||e.name||'Appointment';const contact=e.contactName||e.customerName||e.firstName||'';const status=e.appointmentStatus||e.status||'confirmed';return `<div class="appt"><div class="time">${start.toLocaleDateString([], {month:'short',day:'numeric'})}<br>${start.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</div><div><h4>${escapeHtml(title)}</h4><p>${escapeHtml(e._calendarName)}${contact?' • '+escapeHtml(contact):''}</p></div><span class="statusPill">${escapeHtml(status)}</span></div>`}).join('')}
+function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
+$('filters').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#filters button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.days=Number(b.dataset.days);try{await loadEvents()}catch(err){showError(err.message)}});
+$('newAppt').addEventListener('click',()=>{$('calendarFrame').src=ANN_URL;$('calendarModal').classList.add('show')});
+$('closeModal').addEventListener('click',async()=>{$('calendarModal').classList.remove('show');$('calendarFrame').src='about:blank';try{await loadEvents()}catch(err){showError(err.message)}});
+(async()=>{try{const status=await jsonFetch('/api/status');if(!status.ready)throw new Error('Vercel is missing GHL_API_TOKEN or GHL_LOCATION_ID.');await loadCalendars()}catch(err){showError(err.message);$('schedule').innerHTML='<div class="empty">Connection is not ready yet.</div>';$('techCount').textContent='Not connected'}})();
+setInterval(()=>loadEvents().catch(e=>showError(e.message)),30000);
+</script>
+</body>
+</html>
